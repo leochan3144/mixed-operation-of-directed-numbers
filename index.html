@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Master Pro - Mastery Mode Step-by-Step Trainer</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- KaTeX CSS & JS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+
+  <!-- Google Font: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      user-select: none;
+    }
+
+    /* KaTeX Size Adjustment */
+    .katex-display {
+      margin: 0.5em 0 !important;
+      font-size: 1.35em;
+    }
+
+    .katex {
+      font-size: 1.15em;
+    }
+
+    /* Custom Shake Animation for Errors */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+
+    .animate-shake {
+      animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+    }
+
+    /* Custom Pulse Glow */
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 15px rgba(99, 102, 241, 0.2); }
+      50% { box-shadow: 0 0 25px rgba(99, 102, 241, 0.5); }
+    }
+
+    .pulse-glow {
+      animation: pulseGlow 3s infinite;
+    }
+
+    /* Floating Trophy Animation */
+    @keyframes floatTrophy {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-12px) rotate(2deg); }
+    }
+
+    .animate-float {
+      animation: floatTrophy 4s ease-in-out infinite;
+    }
+
+    /* Canvas overlay behind trophy */
+    #confetti-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 60;
+    }
+  </style>
+</head>
+<body class="h-full text-slate-100 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex flex-col min-h-screen">
+
+  <canvas id="confetti-canvas"></canvas>
+
+  <header class="bg-slate-900/90 border-b border-slate-800 backdrop-blur sticky top-0 z-40 px-4 py-3 sm:px-6">
+    <div class="max-w-5xl mx-auto flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+          <i class="fa-solid font-bold text-white text-lg">÷</i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+            Math Master Pro
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Mastery Mode</span>
+          </h1>
+          <p class="text-xs text-slate-400">Step-by-Step Problem Solving Trainer</p>
+        </div>
+      </div>
+
+      <!-- Top Stats: Score & Mastered Counter -->
+      <div class="flex items-center gap-3 sm:gap-6">
+        <!-- Score Pill -->
+        <div class="bg-slate-800/90 border border-slate-700/80 px-3 py-1.5 rounded-xl flex items-center gap-2 shadow-inner">
+          <i class="fa-solid fa-star text-amber-400 text-sm"></i>
+          <div class="text-xs uppercase font-medium text-slate-400 hidden sm:block">Score</div>
+          <span id="score-display" class="font-mono font-bold text-base sm:text-lg text-emerald-400">+0</span>
+          <i id="score-trophy-icon" class="fa-solid fa-trophy text-amber-400 text-lg hidden ml-1 animate-float"></i>
+        </div>
+
+        <!-- Mastered Count -->
+        <div class="bg-slate-800/90 border border-slate-700/80 px-3 py-1.5 rounded-xl flex items-center gap-2 shadow-inner">
+          <i class="fa-solid fa-trophy text-indigo-400 text-sm"></i>
+          <div class="text-xs uppercase font-medium text-slate-400 hidden sm:block">Mastered</div>
+          <span id="mastered-count-display" class="font-mono font-bold text-base sm:text-lg text-indigo-300">0 / 10</span>
+        </div>
+
+        <!-- Reset Quiz Button -->
+        <button onclick="confirmResetQuiz()" class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" title="Reset All Progress">
+          <i class="fa-solid fa-rotate-right text-base"></i>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-6 flex flex-col gap-6">
+    
+    <!-- Mastery Overall Progress Bar -->
+    <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-lg flex flex-col gap-3">
+      <div class="flex items-center justify-between text-xs sm:text-sm">
+        <div class="flex items-center gap-2 font-medium text-slate-300">
+          <i class="fa-solid fa-layer-group text-indigo-400"></i>
+          <span>Current Type: <strong id="type-title-header" class="text-indigo-300">Type 1: Add & Subtract Integers</strong></span>
+        </div>
+        <div id="mastery-percentage-text" class="font-mono font-semibold text-indigo-400">0% Mastered</div>
+      </div>
+
+      <!-- Segmented Mastery Track -->
+      <div class="w-full bg-slate-950 rounded-full h-3 p-0.5 border border-slate-800 flex gap-1" id="mastery-track-segments">
+        <!-- 10 segments injected dynamically -->
+      </div>
+    </div>
+
+    <div id="retry-notice-banner" class="hidden bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 text-amber-200 text-xs sm:text-sm flex items-start sm:items-center gap-3 shadow-md animate-fade-in">
+      <i class="fa-solid fa-triangle-exclamation text-amber-400 text-lg shrink-0 mt-0.5 sm:mt-0"></i>
+      <div class="flex-1">
+        <strong class="font-semibold text-amber-300">Mastery Retries Active:</strong>
+        <span class="text-amber-200/90"> You made a mistake on this question. To unlock the next type, complete this question and solve a fresh one with 100% accuracy!</span>
+      </div>
+    </div>
+
+    <div class="bg-slate-900/90 border border-slate-800/80 rounded-3xl p-5 sm:p-8 shadow-2xl pulse-glow flex flex-col gap-6">
+      
+      <!-- Card Header: Type Badge & Step Indicator -->
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
+        <div class="flex items-center gap-2">
+          <span id="type-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+            Type 1
+          </span>
+          <span id="type-full-name" class="text-sm font-semibold text-slate-200">
+            Add & Subtract Integers with Double Signs
+          </span>
+        </div>
+        <div class="text-xs font-medium text-slate-400 bg-slate-800 px-3 py-1 rounded-full border border-slate-700/60">
+          Step <span id="current-step-num" class="text-white font-bold">1</span> of <span id="total-steps-num" class="text-white font-bold">3</span>
+        </div>
+      </div>
+
+      <!-- ORIGINAL PROBLEM DISPLAY (NO EQUAL SIGN AT FRONT) -->
+      <div class="bg-slate-950/80 rounded-2xl p-5 sm:p-7 border border-indigo-500/20 text-center flex flex-col gap-2 relative overflow-hidden shadow-inner">
+        <div class="text-xs uppercase tracking-wider text-indigo-400/90 font-semibold">Original Problem</div>
+        <!-- KaTeX Container for Problem Display -->
+        <div id="katex-original-problem" class="py-2 overflow-x-auto min-h-[50px] flex items-center justify-center text-slate-100">
+          <!-- Rendered KaTeX goes here -->
+        </div>
+      </div>
+
+      <div id="completed-steps-container" class="hidden flex-col gap-2.5 border-t border-b border-slate-800/60 py-3">
+        <div class="text-xs font-semibold uppercase text-slate-400 tracking-wider">Completed Steps</div>
+        <div id="completed-steps-list" class="flex flex-col gap-2">
+          <!-- Step cards appended here dynamically -->
+        </div>
+      </div>
+
+      <!-- CURRENT STEP PROMPT -->
+      <div class="flex flex-col gap-4">
+        <div id="step-instruction" class="text-sm sm:text-base font-semibold text-slate-200 flex items-center gap-2">
+          <i class="fa-solid fa-circle-arrow-right text-indigo-400"></i>
+          <span id="step-instruction-text">Step 1: Choose the correct simplified expression</span>
+        </div>
+
+        <div id="options-container" class="grid grid-cols-1 gap-3.5">
+          <!-- 3 Full KaTeX Expression Choice Cards rendered dynamically -->
+        </div>
+      </div>
+
+      <div id="feedback-box" class="hidden rounded-2xl p-4 text-sm flex items-start gap-3 transition-all">
+        <i id="feedback-icon" class="text-lg shrink-0 mt-0.5"></i>
+        <div class="flex-1 flex flex-col gap-1">
+          <div id="feedback-title" class="font-bold"></div>
+          <div id="feedback-body" class="text-slate-300 text-xs sm:text-sm"></div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    // Score & Mastery state
+    let totalScore = 0;
+    let currentTypeIndex = 0; // 0 to 9 (Question Types 1 to 10)
+    let currentStepIndex = 0;
+    let currentProblemMistakes = 0;
+    let typeMasteredStatus = Array(10).fill(false); // [false x10]
+
+    // Current problem instance
+    let currentProblem = null;
+    let completedStepsHistory = [];
+
+    // Web Audio Synthesizer setup
+    let audioCtx = null;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playSound(type) {
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+
+        if (type === 'correct') {
+          const osc1 = ctx.createOscillator();
+          const osc2 = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          osc1.type = 'sine';
+          osc2.type = 'triangle';
+          osc1.frequency.setValueAtTime(523.25, now); // C5
+          osc2.frequency.setValueAtTime(659.25, now + 0.08); // E5
+
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+          osc1.connect(gain);
+          osc2.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc1.start(now);
+          osc2.start(now + 0.08);
+          osc1.stop(now + 0.35);
+          osc2.stop(now + 0.35);
+        } else if (type === 'error') {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(160, now);
+          osc.frequency.linearRampToValueAtTime(110, now + 0.25);
+
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start(now);
+          osc.stop(now + 0.25);
+        } else if (type === 'victory') {
+          const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+          notes.forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.1);
+
+            gain.gain.setValueAtTime(0.2, now + idx * 0.1);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.4);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(now + idx * 0.1);
+            osc.stop(now + idx * 0.1 + 0.4);
+          });
+        }
+      } catch (e) {
+        console.warn('Audio playback not supported or blocked.', e);
+      }
+    }
+
+    function randInt(min, max, excludeZero = false) {
+      let val = 0;
+      do {
+        val = Math.floor(Math.random() * (max - min + 1)) + min;
+      } while (excludeZero && val === 0);
+      return val;
+    }
+
+    function gcd(a, b) {
+      a = Math.abs(a);
+      b = Math.abs(b);
+      while (b) {
+        let t = b;
+        b = a % b;
+        a = t;
+      }
+      return a;
+    }
+
+    function formatFracLatex(num, den) {
+      if (den < 0) {
+        num = -num;
+        den = -den;
+      }
+      if (num === 0) return "0";
+      if (den === 1) return `${num}`;
+      const sign = num < 0 ? "-" : "";
+      return `${sign}\\frac{${Math.abs(num)}}{${den}}`;
+    }
+
+    function shuffleArray(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    
+    // TYPE 1: Add & Subtract Integers with Double Signs e.g. (-4) - (-12) + (-1)
+    function generateType1() {
+      const a = randInt(-15, 15, true);
+      const b = randInt(-15, 15, true);
+      const c = randInt(-15, 15, true);
+
+      const op1 = Math.random() > 0.5 ? '-' : '+';
+      const op2 = Math.random() > 0.5 ? '-' : '+';
+
+      // Original problem: NO LEADING '=' SIGN
+      const origLatex = `(${a}) ${op1} (${b}) ${op2} (${c})`;
+
+      // Step 1: Simplify double signs
+      const valB = op1 === '-' ? -b : b;
+      const valC = op2 === '-' ? -c : c;
+
+      const signB = valB >= 0 ? '+' : '-';
+      const signC = valC >= 0 ? '+' : '-';
+
+      const step1Correct = `${a} ${signB} ${Math.abs(valB)} ${signC} ${Math.abs(valC)}`;
+      const step1Wrong1 = `${a} ${valB >= 0 ? '-' : '+'} ${Math.abs(valB)} ${signC} ${Math.abs(valC)}`;
+      const step1Wrong2 = `${a} ${signB} ${Math.abs(valB)} ${valC >= 0 ? '-' : '+'} ${Math.abs(valC)}`;
+
+      // Step 2: Combine left to right first two terms
+      const sum12 = a + valB;
+      const step2Correct = `${sum12} ${signC} ${Math.abs(valC)}`;
+      const step2Wrong1 = `${a - valB} ${signC} ${Math.abs(valC)}`;
+      const step2Wrong2 = `${-sum12} ${signC} ${Math.abs(valC)}`;
+
+      // Step 3: Final answer
+      const finalVal = sum12 + valC;
+      const step3Correct = `${finalVal}`;
+      const step3Wrong1 = `${finalVal + 2}`;
+      const step3Wrong2 = `${finalVal - 3}`;
+
+      return {
+        typeId: 1,
+        title: "Add & Subtract Integers with Double Signs",
+        originalLatex: origLatex,
+        steps: [
+          {
+            instruction: "Step 1: Simplify double signs in the expression",
+            explanation: "Remember: $-(-x) = +x$, $+(-x) = -x$, and $-(+x) = -x$.",
+            options: shuffleArray([
+              { latex: step1Correct, isCorrect: true, feedback: "Correct! Double signs simplified." },
+              { latex: step1Wrong1, isCorrect: false, feedback: "Incorrect double sign rule applied to the second term." },
+              { latex: step1Wrong2, isCorrect: false, feedback: "Incorrect double sign rule applied to the third term." }
+            ])
+          },
+          {
+            instruction: "Step 2: Evaluate the first two terms from left to right",
+            explanation: "Perform the addition/subtraction on the first two numbers.",
+            options: shuffleArray([
+              { latex: step2Correct, isCorrect: true, feedback: "Correct addition of first two terms." },
+              { latex: step2Wrong1, isCorrect: false, feedback: "Incorrect arithmetic addition." },
+              { latex: step2Wrong2, isCorrect: false, feedback: "Incorrect sign in the sum of first two terms." }
+            ])
+          },
+          {
+            instruction: "Step 3: Evaluate the final value",
+            explanation: "Perform the final addition or subtraction.",
+            options: shuffleArray([
+              { latex: step3Correct, isCorrect: true, feedback: "Correct final answer!" },
+              { latex: step3Wrong1, isCorrect: false, feedback: "Calculation error in final addition." },
+              { latex: step3Wrong2, isCorrect: false, feedback: "Calculation error in final subtraction." }
+            ])
+          }
+        ]
+      };
+    }
+
+    // TYPE 2: Negative Fraction Division e.g. -\frac{244}{-4}
+    function generateType2() {
+      const divisor = randInt(2, 12);
+      const quotient = randInt(3, 25);
+      const numerator = divisor * quotient;
+
+      const variant = randInt(1, 3);
+      let origLatex = "";
+      let step1Correct = "";
+      let step1Wrong1 = "";
+      let step1Wrong2 = "";
+
+      if (variant === 1) {
+        origLatex = `-\\frac{${numerator}}{-${divisor}}`;
+        step1Correct = `\\frac{${numerator}}{${divisor}}`;
+        step1Wrong1 = `-\\frac{${numerator}}{${divisor}}`;
+        step1Wrong2 = `\\frac{-${numerator}}{${divisor}}`;
+      } else if (variant === 2) {
+        origLatex = `\\frac{-${numerator}}{-${divisor}}`;
+        step1Correct = `\\frac{${numerator}}{${divisor}}`;
+        step1Wrong1 = `-\\frac{${numerator}}{${divisor}}`;
+        step1Wrong2 = `-\\frac{-${numerator}}{${divisor}}`;
+      } else {
+        origLatex = `-\\frac{-${numerator}}{${divisor}}`;
+        step1Correct = `\\frac{${numerator}}{${divisor}}`;
+        step1Wrong1 = `-\\frac{${numerator}}{${divisor}}`;
+        step1Wrong2 = `\\frac{-${numerator}}{-${divisor}}`;
+      }
+
+      return {
+        typeId: 2,
+        title: "Negative Fraction Division",
+        originalLatex: origLatex,
+        steps: [
+          {
+            instruction: "Step 1: Simplify the signs of the fraction",
+            explanation: "Two negative signs cancel out to become positive: $\\frac{-a}{-b} = +\\frac{a}{b}$ and $-\\left(\\frac{a}{-b}\\right) = +\\frac{a}{b}$.",
+            options: shuffleArray([
+              { latex: step1Correct, isCorrect: true, feedback: "Correct! Double negatives simplify to positive." },
+              { latex: step1Wrong1, isCorrect: false, feedback: "Sign error! Negative divided by negative is positive." },
+              { latex: step1Wrong2, isCorrect: false, feedback: "Sign error in numerator." }
+            ])
+          },
+          {
+            instruction: "Step 2: Perform division to evaluate the quotient",
+            explanation: "Divide the numerator by the denominator.",
+            options: shuffleArray([
+              { latex: `${quotient}`, isCorrect: true, feedback: "Correct division!" },
+              { latex: `-${quotient}`, isCorrect: false, feedback: "The result should be positive." },
+              { latex: `${quotient + 1}`, isCorrect: false, feedback: "Arithmetic calculation mistake." }
+            ])
+          }
+        ]
+      };
+    }
+
+    // TYPE 3: Triple Integer Multiplication e.g. (-2)(-3)(-5)
+    function generateType3() {
+      const a = randInt(-8, 8, true);
+      const b = randInt(-8, 8, true);
+      const c = randInt(-8, 8, true);
+
+      const signStr = (x) => x > 0 ? `+${x}` : `${x}`;
+      const origLatex = `(${signStr(a)})(${signStr(b)})(${signStr(c)})`;
+
+      const prod12 = a * b;
+      const step1Correct = `(${prod12})(${signStr(c)})`;
+      const step1Wrong1 = `(${-prod12})(${signStr(c)})`;
+      const step1Wrong2 = `(${a + b})(${signStr(c)})`;
+
+      const finalProd = prod12 * c;
+
+      return {
+        typeId: 3,
+        title: "Triple Integer Multiplication",
+        originalLatex: origLatex,
+        steps: [
+          {
+            instruction: "Step 1: Multiply the first two factors from left to right",
+            explanation: `Multiply (${signStr(a)}) by (${signStr(b)}). Positive × Positive = Positive, Negative × Negative = Positive, Positive × Negative = Negative.`,
+            options: shuffleArray([
+              { latex: step1Correct, isCorrect: true, feedback: "Correct multiplication of first two terms." },
+              { latex: step1Wrong1, isCorrect: false, feedback: "Sign error in product of first two factors." },
+              { latex: step1Wrong2, isCorrect: false, feedback: "You added instead of multiplying!" }
+            ])
+          },
+          {
+            instruction: "Step 2: Multiply by the final factor",
+            explanation: `Multiply (${prod12}) by (${signStr(c)}).`,
+            options: shuffleArray([
+              { latex: `${finalProd}`, isCorrect: true, feedback: "Correct final product!" },
+              { latex: `${-finalProd}`, isCorrect: false, feedback: "Incorrect final sign." },
+              { latex: `${finalProd + (finalProd > 0 ? -10 : 10)}`, isCorrect: false, feedback: "Calculation error." }
+            ])
+          }
+        ]
+      };
+    }
+
+    // TYPE 4: Fraction with Expression Numerator e.g. \frac{(+34) - (-18)}{-4}
+    function generateType4() {
+      const divisor = randInt(-12, 12, true);
+      const quotient = randInt(-15, 15, true);
+      const numeratorTarget = divisor * quotient;
+
+      const a = randInt(-25, 25);
+      const b = a - numeratorTarget; 
+
+      const signStr = (x) => x >= 0 ? `+${x}` : `${x}`;
+      const origLatex = `\\frac{(${signStr(a)}) - (${signStr(b)})}{${divisor}}`;
+
+      // Step 1: Expand double signs in numerator
+      const op2 = b >= 0 ? '-' : '+';
+      const absB = Math.abs(b);
+      const step1Correct = `\\frac{${a > 0 ? '+' + a : a} ${op2} ${absB}}{${divisor}}`;
+      const step1Wrong1 = `\\frac{${a > 0 ? '+' + a : a} ${b >= 0 ? '+' : '-'} ${absB}}{${divisor}}`;
+      const step1Wrong2 = `\\frac{${a > 0 ? '+' + a : a} ${op2} ${absB + 2}}{${divisor}}`;
+
+      // Step 2: Evaluate the expression in the numerator
+      let wrongNum1 = a + absB;
+      if (wrongNum1 === numeratorTarget) wrongNum1 = a - absB;
+      if (wrongNum1 === numeratorTarget) wrongNum1 = numeratorTarget + 5;
+
+      let wrongNum2 = -numeratorTarget;
+      if (wrongNum2 === numeratorTarget) wrongNum2 = numeratorTarget - 3;
+
+      const step2Correct = `\\frac{${numeratorTarget}}{${divisor}}`;
+      const step2Wrong1 = `\\frac{${wrongNum1}}{${divisor}}`; 
+      const step2Wrong2 = `\\frac{${wrongNum2}}{${divisor}}`;
+
+      return {
+        typeId: 4,
+        title: "Fraction with Expression Numerator",
+        originalLatex: origLatex,
+        steps: [
+          {
+            instruction: "Step 1: Expand double signs in the numerator",
+            explanation: `Simplify the double signs before evaluating.`,
+            options: shuffleArray([
+              { latex: step1Correct, isCorrect: true, feedback: "Correct sign expansion." },
+              { latex: step1Wrong1, isCorrect: false, feedback: "Incorrect sign operation." },
+              { latex: step1Wrong2, isCorrect: false, feedback: "Typo in the number." }
+            ])
+          },
+          {
+            instruction: "Step 2: Simplify the expression in the numerator",
+            explanation: `Evaluate the addition/subtraction: ${a > 0 ? '+' + a : a} ${op2} ${absB} = ${numeratorTarget}.`,
+            options: shuffleArray([
+              { latex: step2Correct, isCorrect: true, feedback: "Correct numerator simplification." },
+              { latex: step2Wrong1, isCorrect: false, feedback: "Calculation error." },
+              { latex: step2Wrong2, isCorrect: false, feedback: "Sign error in numerator result." }
+            ])
+          },
+          {
+            instruction: "Step 3: Evaluate the fraction division",
+            explanation: "Divide the simplified numerator by the denominator.",
+            options: shuffleArray([
+              { latex: `${quotient}`, isCorrect: true, feedback: "Correct final quotient!" },
+              { latex: `${-quotient}`, isCorrect: false, feedback: "Sign error in division." },
+              { latex: `${quotient + 2}`, isCorrect: false, feedback: "Arithmetic division error." }
+            ])
+          }
+        ]
+      };
+    }
+
+    // TYPE 5: Nested Brackets e.g. 9 - [-4 - (13 + 8)]
+    function generateType5() {
+      const a = randInt(2, 20);
+      const b = randInt(-15, 15, true);
+      const c = randInt(2, 15);
+      const d = randInt(2, 15);
+
+      const origLatex = `${a} - [${b} - (${c} + ${d})]`;
+
+      const innerVal = c + d;
+      const step1Correct = `${a} - [${b} - ${innerVal}]`;
+      const step1Wrong1 = `${a} - [${b} - ${c - d}]`;
+      const step1Wrong2 = `${a} - [${b} + ${innerVal}]`;
+
+      const outerVal = b - innerVal;
+      const step2Correct = `${a} - [${outerVal}]`;
+      const step2Wrong1 = `${a} - [${b + innerVal}]`;
+      const step2Wrong2 = `${a} - [${-outerVal}]`;
+
+      // Step 3: Simplify double negative (or positive)
+      const op = outerVal < 0 ? '+' : '-';
+      const absOuter = Math.abs(outerVal);
+      const step3Correct = `${a} ${op} ${absOuter}`;
+      const step3Wrong1 = `${a} ${outerVal < 0 ? '-' : '+'} ${absOuter}`;
+      const step3Wrong2 = `${a} ${op} ${absOuter + 2}`;
+
+      const finalVal = a - outerVal;
+
+      return {
+        typeId: 5,
+        title: "Nested Brackets",
+        originalLatex: origLatex,
+        steps: [
+          {
+            instruction: "Step 1: Simplify the innermost parentheses (c + d)",
+            explanation: `Work from the inside out: evaluate (${c} + ${d}) = ${innerVal}.`,
+            options: shuffleArray([
+              { latex: step1Correct, isCorrect: true, feedback: "Correct innermost bracket evaluation." },
+              { latex: step1Wrong1, isCorrect: false, feedback: "Subtracted instead of adding inside parentheses." },
+              { latex: step1Wrong2, isCorrect: false, feedback: "Sign error outside parentheses." }
+            ])
+          },
+          {
+            instruction: "Step 2: Simplify the outer square bracket expression",
+            explanation: `Evaluate [${b} - ${innerVal}] = ${outerVal}.`,
+            options: shuffleArray([
+              { latex: step2Correct, isCorrect: true, feedback: "Correct square bracket simplification." },
+              { latex: step2Wrong1, isCorrect: false, feedback: "Added instead of subtracted inside square brackets." },
+              { latex: step2Wrong2, isCorrect: false, feedback: "Sign error in bracket evaluation." }
+            ])
+          },
+          {
+            instruction: "Step 3: Expand the double signs",
+            explanation: `Simplify ${a} - [${outerVal}].`,
+            options: shuffleArray([
+              { latex: step3Correct, isCorrect: true, feedback: "Correct double sign simplification." },
+              { latex: step3Wrong1, isCorrect: false, feedback: "Incorrect sign resolution." },
+              { latex: step3Wrong2, isCorrect: false, feedback: "Typo in the number." }
+            ])
+          },
+          {
+            instruction: "Step 4: Evaluate the final result",
+            explanation: `Calculate ${a} ${op} ${absOuter} = ${finalVal}.`,
+            options: shuffleArray([
+              { latex: `${finalVal}`, isCorrect: true, feedback: "Correct final result!" },
+              { latex: `${-finalVal}`, isCorrect: false, feedback: "Incorrect final sign." },
+              { latex: `${finalVal + 5}`, isCorrect: false, feedback: "Arithmetic calculation error." }
+            ])
+          }
+        ]
+      };
+    }
+
+    // TYPE 6: Order of Operations (Subtraction & Multiplication) e.g. (-3) - (-2) \times (+7)
+    function generateType6() {
+      const a = randInt(-10, 10, true);
+      const b = randInt(-8, 8, true);
+      const c = randInt(-8, 8, true);
+
+      const signStr = (x) => x >= 0 ? `+${x}` : `${x}`;
+      const origLatex = `(${signStr(a)}) - (${signStr(b)}) \\times (${signStr(c)})`;
+
+      const prodBC = b * c;
+      const step1Correct = `(${signStr(a)}) - (${signStr(prodBC)})`;
+      const step1Wrong1 = `(${signStr(a - b)}) \\times (${signStr(c)})`; 
+      const step1Wrong2 = `(${signStr(a)}) - (${signStr(-prodBC)})`;
+
+      const step2Correct = `${a} ${-prodBC >= 0 ? '+' : '-'} ${Math.abs(prodBC)}`;
+      const step2Wrong1 = `${a} ${prodBC >= 0 ? '+' : '-'} ${Math.abs(prodBC)}`;
+
+      const finalVal = a - prodBC;
+
+      return {
+        typeId: 6,
+        title: "Order of Operations (Subtraction & Multiplication)",
+        originalLatex: origLatex,
+        steps: [
+          {
+            instruction: "Step 1: Perform multiplication BEFORE subtraction (BODMAS / PEMDAS)",
+            explanation: `Multiplication has higher priority than subtraction! Evaluate (${signStr(b)}) \\times (${signStr(c)}) = ${prodBC}.`,
+            options: shuffleArray([
+              { latex: step1Correct, isCorrect: true, feedback: "Correct! Multiplication performed first." },
+              { latex: step1Wrong1, isCorrect: false, feedback: "Wrong order of operations! Do NOT subtract before multiplying." },
+              { latex: step1Wrong2, isCorrect: false, feedback: "Sign error in multiplication product." }
+            ])
+          },
+          {
+            instruction: "Step 2: Simplify double negative signs",
+            explanation: `Simplify (${signStr(a)}) - (${signStr(prodBC)}). Subtracting a negative is adding a positive.`,
+            options: shuffleArray([
+              { latex: step2Correct, isCorrect: true, feedback: "Correct double sign simplification." },
+              { latex: step2Wrong1, isCorrect: false, feedback: "Incorrect sign resolution." },
+              { latex: `${-a} - ${Math.abs(prodBC)}`, isCorrect: false, feedback: "First term sign altered incorrectly." }
+            ])
+          },
+          {
+            instruction: "Step 3: Evaluate final addition/subtraction",
+            explanation: "Perform the final calculation.",
+            options: shuffleArray([
+              { latex: `${finalVal}`, isCorrect: true, feedback: "Correct final answer!" },
+              { latex: `${a + prodBC}`, isCorrect: false, feedback: "Arithmetic calculation error." },
+              { latex: `${-finalVal}`, isCorrect: false, feedback: "Sign error in result." }
+            ])
+          }
+        ]
+      };
+    }
+
+    // TYPE 7: Division before Multiplication e.g. (+8) \div (-2) \times (-3)
+    function generateType7() {
+      const b = randInt(-8, 8, true);
+      const quotient = randInt(-8, 8, true);
+      const a = b * quotient;
+      const c = randInt(-8, 8, true);
+
+      const signStr = (x) => x >= 0 ? `+${x}` : `${x}`;
+      const origLatex = `(${signStr(a)}) \\div (${signStr(b)}) \\times (${signStr(c)})`;
+
+      const step1Correct = `(${signStr(quotient)}) \\times (${signStr(c)})`;
+      const step1Wrong1 = `(${signStr(a)}) \\div (${signStr(b * c)})`; 
+      const step1Wrong2 = `(${signStr(-quotient)}) \\times (${signStr(c)})`;
+
+      const finalVal = quotient * c;
+
+      return {
+        typeId: 7,
+        title: "Division before Multiplication",
+        originalLatex: origLatex,
+        steps: [
+          {
+            instruction: "Step 1: Evaluate division and multiplication from LEFT TO RIGHT",
+            explanation: `When division and multiplication appear together, evaluate strictly from left to right! Divide (${signStr(a)}) \\div (${signStr(b)}) = ${quotient}.`,
+            options: shuffleArray([
+              { latex: step1Correct, isCorrect: true, feedback: "Correct! Left-to-right order followed." },
+              { latex: step1Wrong1, isCorrect: false, feedback: "Wrong order! Do not multiply second terms first." },
+              { latex: step1Wrong2, isCorrect: false, feedback: "Sign error in division quotient." }
+            ])
+          },
+          {
+            instruction: "Step 2: Evaluate the final multiplication",
+            explanation: `Multiply (${signStr(quotient)}) \\times (${signStr(c)}).`,
+            options: shuffleArray([
+              { latex: `${finalVal}`, isCorrect: true, feedback: "Correct final product!" },
+              { latex: `${-finalVal}`, isCorrect: false, feedback: "Sign error in multiplication." },
+              { latex: `${quotient + c}`, isCorrect: false, feedback: "You added instead of multiplying." }
+            ])
+          }
+        ]
+      };
+    }
+
+    // TYPE 8: Multiplication before Division e.g. (-4) \times (-3) \div (+2)
+    function generateType8() {
+      const a = randInt(-8, 8, true);
+      const b = randInt(-8, 8, true);
+      const prod = a * b;
+
+      const possibleC = [2, -2, 3, -3, 4, -4, 6, -6].filter(x => prod % x === 0);
+      const c = possibleC.length > 0 ? possibleC[randInt(0, possibleC.length - 1)] : 2;
+
+      const signStr = (x) => x >= 0 ? `+${x}` : `${x}`;
+      const origLatex = `(${signStr(a)}) \\times (${signStr(b)}) \\div (${signStr(c)})`;
+
+      const step1Correct = `${prod} \\div (${signStr(c)})`;
+      const step1Wrong1 = `(${signStr(a)}) \\times (${signStr(Math.round(b / c))})`;
+      const step1Wrong2 = `${-prod} \\div (${signStr(c)})`;
+
+      const finalVal = prod / c;
+
+      return {
+        typeId: 8,
+        title: "Multiplication before Division",
+        originalLatex: origLatex,
+        steps: [
+          {
+            instruction: "Step 1: Evaluate multiplication first from LEFT TO RIGHT",
+            explanation: `Evaluate left-to-right: multiply (${signStr(a)}) \\times (${signStr(b)}) = ${prod}.`,
+            options: shuffleArray([
+              { latex: step1Correct, isCorrect: true, feedback: "Correct left-to-right multiplication step." },
+              { latex: step1Wrong1, isCorrect: false, feedback: "Wrong order! Do not divide second terms first." },
+              { latex: step1Wrong2, isCorrect: false, feedback: "Sign error in multiplication product." }
+            ])
+          },
+          {
+            instruction: "Step 2: Evaluate the division to find final answer",
+            explanation: `Divide ${prod} \\div (${signStr(c)}) = ${finalVal}.`,
+            options: shuffleArray([
+              { latex: `${finalVal}`, isCorrect: true, feedback: "Correct final division!" },
+              { latex: `${-finalVal}`, isCorrect: false, feedback: "Sign error in quotient." },
+              { latex: `${prod * c}`, isCorrect: false, feedback: "Multiplied instead of dividing." }
+            ])
+          }
+        ]
+      };
+    }
+
+    // TYPE 9: Complex Fraction Expression e.g. -2 - \frac{-1(-4)}{-1 - (+4)}
+    function generateType9() {
+      const a = randInt(-5, 5, true);
+      const b = randInt(-4, 4, true);
+      const c = randInt(-4, 4, true);
+
+      const d = randInt(-4, 4);
+      let e = randInt(-4, 4);
+      if (d === e) e = d + 2; 
+
+      const num = b * c;
+      const den = d - e;
+      const origLatex = `${a} - \\frac{(${b})(${c})}{${d} - (${e >= 0 ? '+' + e : e})}`;
+
+      // Step 1: Simplify numerator and expand denominator double signs
+      const opE = e >= 0 ? '-' : '+';
+      const absE = Math.abs(e);
+      const step1Correct = `${a} - \\frac{${num}}{${d} ${opE} ${absE}}`;
+      const step1Wrong1 = `${a} - \\frac{${b + c}}{${d} ${opE} ${absE}}`;
+      const step1Wrong2 = `${a} - \\frac{${num}}{${d} ${e >= 0 ? '+' : '-'} ${absE}}`;
+
+      // Step 2: Simplify the denominator
+      const step2Correct = `${a} - \\frac{${num}}{${den}}`;
+      const step2Wrong1 = `${a} - \\frac{${num}}{${d + e}}`;
+      const step2Wrong2 = `${a} - \\frac{-${num}}{${den}}`;
+
+      // Step 3: Simplify fraction double signs
+      const netFracVal = num / den;
+      const opSign = netFracVal >= 0 ? '-' : '+';
+      const absFrac = `\\frac{${Math.abs(num)}}{${Math.abs(den)}}`;
+      const step3Correct = `${a} ${opSign} ${absFrac}`;
+      const step3Wrong1 = `${a} ${netFracVal >= 0 ? '+' : '-'} ${absFrac}`;
+
+      // Step 4: Combine into final fraction
+      const absNum = Math.abs(num);
+      const absDen = Math.abs(den);
+      const overallNum = a * absDen + (opSign === '+' ? absNum : -absNum);
+      const g = gcd(overallNum, absDen);
+
+      const finalNum = overallNum / g;
+      const finalDen = absDen / g;
+
+      const finalLatex = formatFracLatex(finalNum, finalDen);
+
+      return {
+        typeId: 9,
+        title: "Complex Fraction Expression",
+        originalLatex: origLatex,
+        steps: [
+          {
+            instruction: "Step 1: Simplify numerator and expand denominator double signs",
+            explanation: `Numerator: (${b}) × (${c}) = ${num}. Denominator: expand signs.`,
+            options: shuffleArray([
+              { latex: step1Correct, isCorrect: true, feedback: "Correct step." },
+              { latex: step1Wrong1, isCorrect: false, feedback: "Numerator added instead of multiplied." },
+              { latex: step1Wrong2, isCorrect: false, feedback: "Sign error expanding denominator." }
+            ])
+          },
+          {
+            instruction: "Step 2: Simplify the denominator",
+            explanation: `Evaluate ${d} ${opE} ${absE} = ${den}.`,
+            options: shuffleArray([
+              { latex: step2Correct, isCorrect: true, feedback: "Correct denominator simplification." },
+              { latex: step2Wrong1, isCorrect: false, feedback: "Calculation error in denominator." },
+              { latex: step2Wrong2, isCorrect: false, feedback: "Sign error in numerator." }
+            ])
+          },
+          {
+            instruction: "Step 3: Simplify the negative signs in front of the fraction",
+            explanation: `Determine the net sign of the fraction.`,
+            options: shuffleArray([
+              { latex: step3Correct, isCorrect: true, feedback: "Correct fraction sign resolution." },
+              { latex: step3Wrong1, isCorrect: false, feedback: "Incorrect fraction double sign handling." },
+              { latex: `${-a} ${opSign} ${absFrac}`, isCorrect: false, feedback: "Altered the first integer term incorrectly." }
+            ])
+          },
+          {
+            instruction: "Step 4: Combine terms into a single simplified fraction",
+            explanation: "Combine the integer and fraction into a single reduced fraction.",
+            options: shuffleArray([
+              { latex: finalLatex, isCorrect: true, feedback: "Correct reduced fraction answer!" },
+              { latex: formatFracLatex(-finalNum, finalDen), isCorrect: false, feedback: "Sign error in final fraction." },
+              { latex: formatFracLatex(finalNum + 2, finalDen), isCorrect: false, feedback: "Calculation error in fraction addition." }
+            ])
+          }
+        ]
+      };
+    }
+
+    // TYPE 10: Division of Two Fractions e.g. \frac{+2}{-3} \div -\frac{4}{7}
+    function generateType10() {
+      const g1 = randInt(2, 4);
+      const g2 = randInt(2, 4);
+      
+      const c_n1 = randInt(1, 3) * (Math.random() > 0.5 ? 1 : -1);
+      const c_n2 = randInt(1, 3) * (Math.random() > 0.5 ? 1 : -1);
+      const c_d1 = randInt(1, 3);
+      const c_d2 = randInt(1, 3);
+
+      const n1 = c_n1 * g1;
+      const n2 = c_n2 * g1;
+      const d1 = c_d1 * g2;
+      const d2 = c_d2 * g2;
+
+      const f1Latex = formatFracLatex(n1, d1);
+      const f2Latex = formatFracLatex(n2, d2);
+
+      const origLatex = `${f1Latex} \\div \\left(${f2Latex}\\right)`;
+
+      // Step 1: Multiplication by reciprocal
+      const recipF2Latex = formatFracLatex(d2, n2);
+      const step1Correct = `\\left(${f1Latex}\\right) \\times \\left(${recipF2Latex}\\right)`;
+      const step1Wrong1 = `\\left(${f1Latex}\\right) \\times \\left(${f2Latex}\\right)`; 
+      
+      let badF1Num = d1;
+      let badF1Den = n1;
+      if (Math.abs(n1) === Math.abs(d1)) {
+        badF1Num = d1 > 0 ? d1 + 1 : d1 - 1;
+      }
+      const step1Wrong2 = `\\left(${formatFracLatex(badF1Num, badF1Den)}\\right) \\times \\left(${recipF2Latex}\\right)`;
+
+      // Step 2: Cross simplification
+      const cross1 = gcd(n1, n2);
+      const cross2 = gcd(d1, d2);
+
+      const real_c_n1 = n1 / cross1;
+      const real_c_n2 = n2 / cross1;
+      const real_c_d1 = d1 / cross2;
+      const real_c_d2 = d2 / cross2;
+
+      const crossF1Latex = formatFracLatex(real_c_n1, real_c_d1);
+      const crossF2Latex = formatFracLatex(real_c_d2, real_c_n2);
+      
+      const step2Correct = `\\left(${crossF1Latex}\\right) \\times \\left(${crossF2Latex}\\right)`;
+      
+      let step2Wrong1 = `\\left(${formatFracLatex(real_c_n1, real_c_n2)}\\right) \\times \\left(${formatFracLatex(real_c_d2, real_c_d1)}\\right)`;
+      if (step2Wrong1 === step2Correct) {
+          step2Wrong1 = `\\left(${formatFracLatex(real_c_n1 + 1, real_c_d1)}\\right) \\times \\left(${formatFracLatex(real_c_d2, real_c_n2 + 1)}\\right)`;
+      }
+      
+      let wrongSign_n1 = -real_c_n1;
+      if (wrongSign_n1 === real_c_n1) wrongSign_n1 = 1; 
+      let step2Wrong2 = `\\left(${formatFracLatex(wrongSign_n1, real_c_d1)}\\right) \\times \\left(${crossF2Latex}\\right)`;
+      if (step2Wrong2 === step2Correct || step2Wrong2 === step2Wrong1) {
+          step2Wrong2 = `\\left(${formatFracLatex(real_c_n1, real_c_d1 + 1)}\\right) \\times \\left(${crossF2Latex}\\right)`;
+      }
+
+      // Step 3: Final reduced fraction
+      const rawNum = real_c_n1 * real_c_d2;
+      const rawDen = real_c_d1 * real_c_n2;
+      const g = gcd(rawNum, rawDen);
+      let finN = rawNum / g;
+      let finD = rawDen / g;
+      const finalLatex = formatFracLatex(finN, finD);
+
+      return {
+        typeId: 10,
+        title: "Division of Two Fractions",
+        originalLatex: origLatex,
+        steps: [
+          {
+            instruction: "Step 1: Convert fraction division to multiplication by reciprocal",
+            explanation: "Keep first fraction, change $\\div$ to $\\times$, and flip the second fraction.",
+            options: shuffleArray([
+              { latex: step1Correct, isCorrect: true, feedback: "Correct reciprocal conversion!" },
+              { latex: step1Wrong1, isCorrect: false, feedback: "You forgot to invert the second fraction!" },
+              { latex: step1Wrong2, isCorrect: false, feedback: "You inverted the first fraction instead of the second." }
+            ])
+          },
+          {
+            instruction: "Step 2: Cross-simplify the fractions",
+            explanation: "Simplify numerators and denominators across the two fractions before multiplying.",
+            options: shuffleArray([
+              { latex: step2Correct, isCorrect: true, feedback: "Correct cross-simplification." },
+              { latex: step2Wrong1, isCorrect: false, feedback: "Incorrect cross-canceling placement." },
+              { latex: step2Wrong2, isCorrect: false, feedback: "Sign error during cross-canceling." }
+            ])
+          },
+          {
+            instruction: "Step 3: Multiply remaining terms for final fraction",
+            explanation: "Multiply the simplified numerators and denominators.",
+            options: shuffleArray([
+              { latex: finalLatex, isCorrect: true, feedback: "Correct final fraction!" },
+              { latex: formatFracLatex(-finN, finD), isCorrect: false, feedback: "Sign error in reduced fraction." },
+              { latex: formatFracLatex(finN + (finN >= 0 ? 1 : -1), finD), isCorrect: false, feedback: "Multiplication error." }
+            ])
+          }
+        ]
+      };
+    }
+
+    // Generator router function
+    function createProblemForType(typeIdx) {
+      switch (typeIdx) {
+        case 0: return generateType1();
+        case 1: return generateType2();
+        case 2: return generateType3();
+        case 3: return generateType4();
+        case 4: return generateType5();
+        case 5: return generateType6();
+        case 6: return generateType7();
+        case 7: return generateType8();
+        case 8: return generateType9();
+        case 9: return generateType10();
+        default: return generateType1();
+      }
+    }
+
+    
+    function renderMath(containerId, latexString) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      try {
+        katex.render(latexString, container, {
+          displayMode: true,
+          throwOnError: false
+        });
+      } catch (err) {
+        container.innerHTML = `<span class="font-mono text-indigo-300">${latexString}</span>`;
+      }
+    }
+
+    function updateScoreUI() {
+      const scoreElem = document.getElementById('score-display');
+      scoreElem.textContent = (totalScore >= 0 ? `+${totalScore}` : `${totalScore}`);
+      if (totalScore < 0) {
+        scoreElem.className = "font-mono font-bold text-base sm:text-lg text-rose-400";
+      } else {
+        scoreElem.className = "font-mono font-bold text-base sm:text-lg text-emerald-400";
+      }
+
+      // Mastered count
+      const masteredCount = typeMasteredStatus.filter(Boolean).length;
+      document.getElementById('mastered-count-display').textContent = `${masteredCount} / 10`;
+
+      // Percentage
+      const percentage = Math.round((masteredCount / 10) * 100);
+      document.getElementById('mastery-percentage-text').textContent = `${percentage}% Mastered`;
+
+      // Display Top Trophy Icon if all Mastered
+      if (masteredCount === 10) {
+        document.getElementById('score-trophy-icon').classList.remove('hidden');
+      } else {
+        document.getElementById('score-trophy-icon').classList.add('hidden');
+      }
+
+      // Update track segments
+      renderMasteryTrackSegments();
+    }
+
+    function renderMasteryTrackSegments() {
+      const track = document.getElementById('mastery-track-segments');
+      track.innerHTML = '';
+      for (let i = 0; i < 10; i++) {
+        const seg = document.createElement('div');
+        seg.className = `flex-1 h-full rounded-full transition-all ${
+          typeMasteredStatus[i] 
+            ? 'bg-gradient-to-r from-emerald-500 to-teal-400 shadow-sm shadow-emerald-500/50' 
+            : (i === currentTypeIndex ? 'bg-indigo-500 animate-pulse' : 'bg-slate-800')
+        }`;
+        seg.title = `Type ${i + 1}: ${typeMasteredStatus[i] ? 'Mastered' : 'Pending'}`;
+        track.appendChild(seg);
+      }
+    }
+
+    function loadProblem(typeIdx) {
+      currentTypeIndex = typeIdx;
+      currentStepIndex = 0;
+      currentProblemMistakes = 0;
+      completedStepsHistory = [];
+
+      currentProblem = createProblemForType(typeIdx);
+
+      // Hide feedback box & retry banner initially
+      hideFeedback();
+      updateRetryNoticeBanner();
+
+      // Header labels
+      document.getElementById('type-title-header').textContent = `Type ${typeIdx + 1}: ${currentProblem.title}`;
+      document.getElementById('type-badge').textContent = `Type ${typeIdx + 1}`;
+      document.getElementById('type-full-name').textContent = currentProblem.title;
+
+      // Render Original Problem (NO EQUAL SIGN AT THE FRONT)
+      renderMath('katex-original-problem', currentProblem.originalLatex);
+
+      // Render Completed Steps Container
+      renderCompletedStepsUI();
+
+      // Render Current Step Options
+      renderCurrentStep();
+
+      updateScoreUI();
+    }
+
+    function updateRetryNoticeBanner() {
+      const banner = document.getElementById('retry-notice-banner');
+      if (currentProblemMistakes > 0) {
+        banner.classList.remove('hidden');
+      } else {
+        banner.classList.add('hidden');
+      }
+    }
+
+    function renderCompletedStepsUI() {
+      const container = document.getElementById('completed-steps-container');
+      const list = document.getElementById('completed-steps-list');
+
+      if (completedStepsHistory.length === 0) {
+        container.classList.add('hidden');
+        list.innerHTML = '';
+        return;
+      }
+
+      container.classList.remove('hidden');
+      list.innerHTML = '';
+
+      completedStepsHistory.forEach((stepItem, idx) => {
+        const card = document.createElement('div');
+        card.className = "bg-slate-950/70 border border-slate-800 rounded-xl p-3 flex items-center justify-between text-xs sm:text-sm";
+        
+        const label = document.createElement('div');
+        label.className = "text-slate-400 font-medium shrink-0 mr-3";
+        label.textContent = `Step ${idx + 1}:`;
+
+        const katexSpan = document.createElement('div');
+        katexSpan.className = "flex-1 overflow-x-auto text-emerald-300 font-medium text-center";
+        katex.render(stepItem.latex, katexSpan, { displayMode: false, throwOnError: false });
+
+        const checkIcon = document.createElement('i');
+        checkIcon.className = "fa-solid fa-circle-check text-emerald-400 text-base ml-2 shrink-0";
+
+        card.appendChild(label);
+        card.appendChild(katexSpan);
+        card.appendChild(checkIcon);
+
+        list.appendChild(card);
+      });
+    }
+
+    function renderCurrentStep() {
+      const totalSteps = currentProblem.steps.length;
+      document.getElementById('current-step-num').textContent = currentStepIndex + 1;
+      document.getElementById('total-steps-num').textContent = totalSteps;
+
+      const stepData = currentProblem.steps[currentStepIndex];
+      document.getElementById('step-instruction-text').textContent = stepData.instruction;
+
+      const optionsContainer = document.getElementById('options-container');
+      optionsContainer.innerHTML = '';
+
+      const optionLetters = ['A', 'B', 'C'];
+
+      stepData.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = "w-full bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 hover:border-indigo-500/60 rounded-2xl p-4 text-left flex items-center gap-4 transition-all group shadow-md";
+        btn.onclick = () => handleOptionSelect(opt, btn);
+
+        const badge = document.createElement('div');
+        badge.className = "w-8 h-8 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 group-hover:border-indigo-500 group-hover:text-indigo-300 font-mono font-bold flex items-center justify-center shrink-0 transition-colors text-sm";
+        badge.textContent = optionLetters[idx];
+
+        const mathDiv = document.createElement('div');
+        mathDiv.className = "flex-1 overflow-x-auto text-slate-100 font-medium py-1";
+        katex.render(opt.latex, mathDiv, { displayMode: false, throwOnError: false });
+
+        btn.appendChild(badge);
+        btn.appendChild(mathDiv);
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    function handleOptionSelect(option, buttonElem) {
+      if (option.isCorrect) {
+        // CORRECT CHOICE (+10 points)
+        playSound('correct');
+        totalScore += 10;
+        updateScoreUI();
+
+        showFeedback(true, "Correct Selection! (+10 pts)", option.feedback);
+
+        // Add to step history
+        completedStepsHistory.push({
+          latex: option.latex
+        });
+
+        // Highlight correct button
+        buttonElem.className = "w-full bg-emerald-950/40 border-2 border-emerald-500 rounded-2xl p-4 text-left flex items-center gap-4 transition-all shadow-lg shadow-emerald-500/10";
+
+        // Disable options during step transition
+        disableAllOptionButtons();
+
+        setTimeout(() => {
+          currentStepIndex++;
+          if (currentStepIndex >= currentProblem.steps.length) {
+            // Finished all steps of this problem!
+            evaluateProblemCompletion();
+          } else {
+            hideFeedback();
+            renderCompletedStepsUI();
+            renderCurrentStep();
+          }
+        }, 1200);
+
+      } else {
+        // INCORRECT CHOICE (-10 points)
+        playSound('error');
+        totalScore -= 10;
+        currentProblemMistakes++;
+        updateScoreUI();
+        updateRetryNoticeBanner();
+
+        // Animate shake button
+        buttonElem.classList.add('animate-shake', 'bg-rose-950/40', 'border-rose-500/80');
+        setTimeout(() => {
+          buttonElem.classList.remove('animate-shake');
+        }, 500);
+
+        showFeedback(false, "Incorrect Step! (-10 pts)", option.feedback + " Try another choice.");
+      }
+    }
+
+    function disableAllOptionButtons() {
+      const container = document.getElementById('options-container');
+      const buttons = container.querySelectorAll('button');
+      buttons.forEach(btn => {
+        btn.disabled = true;
+        btn.style.pointerEvents = 'none';
+      });
+    }
+
+    function evaluateProblemCompletion() {
+      if (currentProblemMistakes === 0) {
+        // PERFECT ANSWER! MASTERED THIS TYPE!
+        typeMasteredStatus[currentTypeIndex] = true;
+        updateScoreUI();
+
+        const countMastered = typeMasteredStatus.filter(Boolean).length;
+
+        if (countMastered === 10) {
+          // ALL 10 TYPES MASTERED! WINNER!
+          playSound('victory');
+          triggerConfetti();
+          // Stays on current view and displays in-page completion feedback
+          showFeedback(true, "Mastery Achieved! 🎉", "Congratulations! You have mastered all 10 step-by-step problem types with 100% accuracy!");
+        } else {
+          // Mastered current type, advance to next unmastered type
+          playSound('victory');
+          triggerConfetti();
+
+          showFeedback(true, `Type ${currentTypeIndex + 1} Mastered! 🎉`, "Perfect 100% accuracy! Advancing to the next question type...");
+
+          setTimeout(() => {
+            currentTypeIndex = (currentTypeIndex + 1) % 10;
+            // Find next unmastered type
+            let attempts = 0;
+            while (typeMasteredStatus[currentTypeIndex] && attempts < 10) {
+              currentTypeIndex = (currentTypeIndex + 1) % 10;
+              attempts++;
+            }
+            loadProblem(currentTypeIndex);
+          }, 2000);
+        }
+
+      } else {
+        // MADE MISTAKES - REQUIRE NEW QUESTION OF SAME TYPE FOR MASTERY
+        showFeedback(false, "Retry Required for Mastery!", `You completed this question with ${currentProblemMistakes} mistake(s). To master Type ${currentTypeIndex + 1}, solve this new problem with 100% accuracy!`);
+
+        setTimeout(() => {
+          loadProblem(currentTypeIndex); // Generate fresh problem of same type!
+        }, 2800);
+      }
+    }
+
+    function showFeedback(isSuccess, title, body) {
+      const box = document.getElementById('feedback-box');
+      const icon = document.getElementById('feedback-icon');
+      const titleElem = document.getElementById('feedback-title');
+      const bodyElem = document.getElementById('feedback-body');
+
+      box.classList.remove('hidden', 'bg-emerald-500/10', 'border-emerald-500/30', 'text-emerald-300', 'bg-rose-500/10', 'border-rose-500/30', 'text-rose-300', 'border');
+
+      if (isSuccess) {
+        box.classList.add('bg-emerald-500/10', 'border', 'border-emerald-500/30', 'text-emerald-300');
+        icon.className = "fa-solid fa-circle-check text-emerald-400 text-lg shrink-0 mt-0.5";
+      } else {
+        box.classList.add('bg-rose-500/10', 'border', 'border-rose-500/30', 'text-rose-300');
+        icon.className = "fa-solid fa-circle-xmark text-rose-400 text-lg shrink-0 mt-0.5";
+      }
+
+      titleElem.textContent = title;
+      bodyElem.textContent = body;
+    }
+
+    function hideFeedback() {
+      document.getElementById('feedback-box').classList.add('hidden');
+    }
+
+    function triggerConfetti() {
+      const canvas = document.getElementById('confetti-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const particles = [];
+      const colors = ['#818cf8', '#34d399', '#f43f5e', '#fbbf24', '#c084fc'];
+
+      for (let i = 0; i < 90; i++) {
+        particles.push({
+          x: canvas.width / 2,
+          y: canvas.height / 2,
+          vx: (Math.random() - 0.5) * 16,
+          vy: (Math.random() - 0.8) * 16,
+          size: Math.random() * 8 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * 360,
+          vRot: (Math.random() - 0.5) * 10,
+          life: 1
+        });
+      }
+
+      function renderParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let active = false;
+
+        particles.forEach(p => {
+          if (p.life > 0) {
+            active = true;
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.3; // Gravity
+            p.rotation += p.vRot;
+            p.life -= 0.015;
+
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate((p.rotation * Math.PI) / 180);
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = Math.max(p.life, 0);
+            ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+            ctx.restore();
+          }
+        });
+
+        if (active) {
+          requestAnimationFrame(renderParticles);
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+
+      renderParticles();
+    }
+
+    function confirmResetQuiz() {
+      totalScore = 0;
+      typeMasteredStatus = Array(10).fill(false);
+      loadProblem(0);
+    }
+
+    // Initialize application on load
+    window.onload = function() {
+      loadProblem(0);
+    };
+
+    // Resize listener for confetti canvas
+    window.addEventListener('resize', () => {
+      const canvas = document.getElementById('confetti-canvas');
+      if (canvas) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+    });
+  </script>
+</body>
+</html>
